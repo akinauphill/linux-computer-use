@@ -156,6 +156,11 @@ class MutterSession:
                                 GLib.Variant("(ss)", (SC + ".Stream", "Parameters"))).unpack()[0]
             self.logical = (*params.get("position", (0, 0)), *params["size"])
             self._clip_enabled = False
+            # Mutter drops the first key event of a new virtual keyboard: spend it on a lone Shift tap
+            time.sleep(0.05)
+            for pressed in (True, False):
+                self._rd("NotifyKeyboardKeysym", GLib.Variant("(ub)", (0xFFE1, pressed)))
+                time.sleep(0.02)
             self.capture()
 
     def stop(self):

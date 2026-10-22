@@ -100,8 +100,9 @@ def main():
         deny.connect("clicked", lambda _b: win.close())
         win.connect("close-request", lambda _w: (application.quit(), False)[1])
         GLib.timeout_add_seconds(int(req.get("timeout", 300)), lambda: (win.close(), False)[1])
+        # safe default: Return / Space before anything else answers "Deny"
+        win.set_focus(deny)
         win.present()
-        deny.grab_focus()
 
     app.connect("activate", activate)
     app.run([])

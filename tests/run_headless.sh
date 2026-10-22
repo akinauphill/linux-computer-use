@@ -16,7 +16,7 @@ mkdir -p "$XDG_DATA_HOME/gnome-shell/extensions" "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 cp -r "$ROOT/extension/lcu-shell@linux-computer-use" "$XDG_DATA_HOME/gnome-shell/extensions/"
 unset DISPLAY
-gnome-shell --headless --wayland --no-x11 --wayland-display=lcu-test --virtual-monitor 1600x1000 \
+gnome-shell --headless --wayland --no-x11 --wayland-display=lcu-test --virtual-monitor "${LCU_HEADLESS_SIZE:-1600x1000}" \
     >"$TMP/shell.log" 2>&1 &
 SHELL_PID=$!
 trap 'kill $SHELL_PID 2>/dev/null; wait $SHELL_PID 2>/dev/null; rm -rf "$TMP"' EXIT
@@ -32,6 +32,11 @@ for _ in $(seq 50); do
     sleep 0.2
 done
 gnome-extensions info lcu-shell@linux-computer-use | grep -i state || true
+# LCU_HEADLESS_SCALE=1.6667 exercises fractional scaling (stage != frame pixels)
+if [ -n "${LCU_HEADLESS_SCALE:-}" ]; then
+    python3 "$ROOT/tests/set_scale.py" "$LCU_HEADLESS_SCALE"
+    sleep 1
+fi
 # the virtual pointer starts at (0,0), inside the hot corner: park it mid-screen first
 python3 -c "import sys, time; sys.path.insert(0, '$ROOT'); from lcu.mutter import MutterSession
 s = MutterSession(); s.start(); s.move(s.frame_size[0] / 2, s.frame_size[1] / 2); time.sleep(0.3); s.stop()"
