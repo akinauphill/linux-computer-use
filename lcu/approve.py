@@ -77,7 +77,7 @@ def main():
                 extras.append((key, cb))
 
         note = Gtk.Label(xalign=0, wrap=True)
-        note.set_markup("<small>Stop at any time with <b>Super+Shift+Escape</b> or the screen-sharing "
+        note.set_markup("<small>Stop at any time with <b>Super+Alt+Escape</b> or the screen-sharing "
                         "indicator in the top bar. Claude sees your whole screen while this is active.</small>")
         box.append(note)
 

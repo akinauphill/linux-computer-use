@@ -1,0 +1,4 @@
+#!/bin/sh
+# MCP stdio server: Claude-desktop-style computer use for GNOME on Wayland.
+LCU_HOME="${LCU_HOME:-$HOME/.local/share/linux-computer-use}"
+cd "$LCU_HOME" && exec /usr/bin/python3 -m lcu "$@"

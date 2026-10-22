@@ -1,0 +1,7 @@
+#!/bin/sh
+# Kill switch for linux-computer-use: revokes all app access on the server's next action.
+dir="${XDG_RUNTIME_DIR:-/tmp}/lcu"
+mkdir -p "$dir" && : > "$dir/stop"
+command -v notify-send >/dev/null && notify-send -a Claude -i process-stop "Computer use stopped" \
+    "Claude's access to your apps has been revoked."
+exit 0

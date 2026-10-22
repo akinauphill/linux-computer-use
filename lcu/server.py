@@ -237,7 +237,7 @@ class Computer:
             subprocess.Popen(["notify-send", "-a", "Claude", "-i", "input-mouse",
                               "Claude is using your computer",
                               "Allowed: " + ", ".join(a.name for a in self.grants.values()) +
-                              "\nPress Super+Shift+Escape to stop."],
+                              "\nPress Super+Alt+Escape to stop."],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except OSError:
             pass
