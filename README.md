@@ -26,8 +26,8 @@ The installer checks for them and prints the `pacman` line if any are missing.
 
 It also:
 
-- registers the server with Claude Code as user-scope MCP server **`computer-use`**, so the tools
-  are named `mcp__computer-use__*` like in the desktop app
+- registers the server with Claude Code as user-scope MCP server **`linux-computer-use`** (Claude Code reserves `computer-use`), so the tools
+  are named `mcp__linux-computer-use__*`
 - binds **Super+Alt+Escape** to `lcu-stop`, the kill switch
 - installs the **lcu-shell** GNOME Shell extension, which gives window-level hit testing. GNOME
   on Wayland only loads new extensions at login, so **log out and back in once** after

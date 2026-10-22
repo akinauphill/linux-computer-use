@@ -4,7 +4,7 @@
 #   - linux-computer-use + lcu-stop in ~/.local/bin
 #   - Super+Alt+Escape kill-switch shortcut
 #   - lcu-shell GNOME Shell extension (active after your next login)
-#   - registered with Claude Code as the user-scope MCP server "computer-use"
+#   - registered with Claude Code as the user-scope MCP server "linux-computer-use"
 # Re-running it upgrades in place. ./install.sh --uninstall removes everything it added.
 set -euo pipefail
 SRC=$(cd "$(dirname "$0")" && pwd)
@@ -14,7 +14,7 @@ EXT_UUID=lcu-shell@linux-computer-use
 EXT_DIR=$HOME/.local/share/gnome-shell/extensions/$EXT_UUID
 KB_PATH=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/lcu-stop/
 KB_SCHEMA=org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KB_PATH
-MCP_NAME=computer-use
+MCP_NAME=linux-computer-use
 
 remove_keybinding() {
     local cur new
