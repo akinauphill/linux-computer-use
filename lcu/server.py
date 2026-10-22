@@ -255,12 +255,11 @@ class Computer:
         size = fit_size(*img.size)
         self.shot_size = size
         out = [encode(img.resize(size, resample=3))]
-        notes = []
+        notes = [f"Screenshot is {size[0]}x{size[1]} px; use these pixel coordinates."]
         foc = self.shell.focused()
         if foc and not self._granted_app_for(foc):
             notes.append(f"Note: the frontmost app ({self._win_label(foc)}) is not granted; input to it is blocked.")
-        if notes:
-            out.append(text(" ".join(notes)))
+        out.append(text(" ".join(notes)))
         return out
 
     def zoom(self, region=None, **_):

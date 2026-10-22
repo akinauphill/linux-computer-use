@@ -83,6 +83,10 @@ These rules mirror the desktop app:
 python3 tests/e2e_test.py        # on your real desktop: opens a throwaway window for ~15 s
 tests/run_headless.sh            # same suite inside a private headless GNOME Shell with the
                                  # extension loaded; does not touch your desktop
+LCU_HEADLESS_SIZE=2880x1800 LCU_HEADLESS_SCALE=1.6667 tests/run_headless.sh   # fractional scaling
+tests/run_headless.sh python3 tests/approval_test.py      # drives the real approval dialog
+LCU_HEADLESS_EXTRA="--virtual-monitor 1280x800" tests/run_headless.sh python3 tests/display_test.py
+tests/run_headless.sh tests/claude_roundtrip.sh           # real Claude Code client -> server
 ```
 
 The suite launches a small GTK window and checks what it actually received. It covers:

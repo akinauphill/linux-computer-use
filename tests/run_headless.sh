@@ -16,7 +16,7 @@ mkdir -p "$XDG_DATA_HOME/gnome-shell/extensions" "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 cp -r "$ROOT/extension/lcu-shell@linux-computer-use" "$XDG_DATA_HOME/gnome-shell/extensions/"
 unset DISPLAY
-gnome-shell --headless --wayland --no-x11 --wayland-display=lcu-test --virtual-monitor "${LCU_HEADLESS_SIZE:-1600x1000}" \
+gnome-shell --headless --wayland --no-x11 --wayland-display=lcu-test --virtual-monitor "${LCU_HEADLESS_SIZE:-1600x1000}" ${LCU_HEADLESS_EXTRA:-} \
     >"$TMP/shell.log" 2>&1 &
 SHELL_PID=$!
 trap 'kill $SHELL_PID 2>/dev/null; wait $SHELL_PID 2>/dev/null; rm -rf "$TMP"' EXIT
