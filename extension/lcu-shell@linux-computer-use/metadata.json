@@ -1,0 +1,7 @@
+{
+  "uuid": "lcu-shell@linux-computer-use",
+  "name": "Linux Computer Use helper",
+  "description": "Exposes window list, focused window, window-at-point, window activation and pointer position on the session bus (org.lcu.Shell) for the linux-computer-use MCP server. No network.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "version": 1
+}
