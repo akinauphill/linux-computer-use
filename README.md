@@ -74,6 +74,12 @@ These rules mirror the desktop app:
 - **Lock screen and shell UI.** Input is refused while the screen is locked, or while the
   overview or a shell menu has keyboard focus.
 - **System shortcuts** (Super…, Alt+Tab, Alt+F4, Ctrl+Alt+Del, Print) need `systemKeyCombos`.
+- **Without the extension** (until your first relogin after installing), the checks are weaker:
+  - Every action is checked against the *frontmost* app as reported by AT-SPI. A click on a
+    different window, the top bar or the dash is not caught while a granted app has focus.
+  - If AT-SPI can't name the frontmost app, input is refused. Firefox, Electron and Xwayland
+    apps often aren't visible to AT-SPI.
+  - The lock screen is detected via `org.gnome.ScreenSaver`.
 - **Stopping.** Press **Super+Alt+Escape**, run `lcu-stop`, or click *Stop* on the
   screen-sharing indicator. Any of these revokes every grant, and Claude is told it was stopped.
 

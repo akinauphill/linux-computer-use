@@ -159,7 +159,7 @@ class Computer:
         frontmost window."""
         self._require_access()
         st = self.shell.state()
-        if st and st.get("locked"):
+        if (st.get("locked") if st else self.shell.screen_locked()):
             raise ToolError(f"{what} blocked: the screen is locked. Ask the user to unlock it.")
         if st and frame_xy is None and (st.get("overview") or st.get("modal")) and not self.flags["systemKeyCombos"]:
             raise ToolError(f"{what} blocked: GNOME Shell UI (overview, menu or dialog) has keyboard focus, "
@@ -168,7 +168,16 @@ class Computer:
         if frame_xy is not None:
             win = self.shell.window_at(*self._sess().frame_to_stage(*frame_xy))
         if win is False:
-            self._check_window(self.shell.focused(), need, what)
+            focused = self.shell.focused()
+            if focused is None:
+                if st is not None and self.flags["systemKeyCombos"]:
+                    return  # nothing focused; input goes to the shell, which the user allowed
+                raise ToolError(
+                    f"{what} blocked: cannot identify the frontmost app, so access can't be checked. "
+                    + ("Click into a granted app window or use open_application first." if st is not None else
+                       "The lcu-shell GNOME extension is not running (it loads after the user logs out and "
+                       "back in); without it only apps that expose themselves over AT-SPI can be checked."))
+            self._check_window(focused, need, what)
             return
         if win is None or win.get("shell"):
             if not self.flags["systemKeyCombos"]:

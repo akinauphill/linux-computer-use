@@ -53,6 +53,15 @@ class Shell:
         except GLib.Error:
             return None
 
+    def screen_locked(self):
+        """Lock-screen state from the public org.gnome.ScreenSaver API (works without the extension)."""
+        try:
+            return self.bus.call_sync("org.gnome.ScreenSaver", "/org/gnome/ScreenSaver", "org.gnome.ScreenSaver",
+                                      "GetActive", None, GLib.VariantType("(b)"),
+                                      Gio.DBusCallFlags.NO_AUTO_START, 2000, None).unpack()[0]
+        except GLib.Error:
+            return False
+
     def activate(self, win_id):
         try:
             return self._call("ActivateWindow", GLib.Variant("(t)", (int(win_id),)), "(b)")[0]

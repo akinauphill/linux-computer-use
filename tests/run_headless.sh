@@ -25,8 +25,10 @@ for _ in $(seq 100); do
         --method org.freedesktop.DBus.Peer.Ping >/dev/null 2>&1 && break
     sleep 0.2
 done
-gnome-extensions enable lcu-shell@linux-computer-use
+# LCU_HEADLESS_NO_EXT=1 tests the fallback path (no extension; AT-SPI is not running here either)
+[ -n "${LCU_HEADLESS_NO_EXT:-}" ] || gnome-extensions enable lcu-shell@linux-computer-use
 for _ in $(seq 50); do
+    [ -n "${LCU_HEADLESS_NO_EXT:-}" ] && break
     gdbus call --session --dest org.lcu.Shell --object-path /org/lcu/Shell \
         --method org.lcu.Shell.FocusedWindow >/dev/null 2>&1 && break
     sleep 0.2
