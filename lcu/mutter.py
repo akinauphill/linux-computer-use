@@ -49,7 +49,7 @@ def list_monitors():
         DC, "/org/gnome/Mutter/DisplayConfig", DC, "GetCurrentState", None, None,
         Gio.DBusCallFlags.NONE, -1, None).unpack()
     names, modes = {}, {}
-    for spec, mds, _cur, props in monitors:
+    for spec, mds, props in monitors:
         names[spec[0]] = props.get("display-name", spec[0])
         modes[spec[0]] = next((m for m in mds if m[6].get("is-current")), None)
     out = []
@@ -146,6 +146,7 @@ class MutterSession:
             self._sub(RD, RD + ".Session", "Closed", self.rd, self._on_closed_signal)
             self._sub(RD, RD + ".Session", "SelectionTransfer", self.rd, self._on_selection_transfer)
             self._self_stop = False
+            self.pointer = None
             self._call(RD, self.rd, RD + ".Session", "Start")
             self.closed = False
             if not got.wait(5):
@@ -216,6 +217,10 @@ class MutterSession:
         x = min(max(float(x), 0.0), w - 1.0)
         y = min(max(float(y), 0.0), h - 1.0)
         self._rd("NotifyPointerMotionAbsolute", GLib.Variant("(sdd)", (self.stream, x, y)))
+        if self.pointer is None:
+            # Mutter can drop the y axis of the first event on a fresh virtual pointer
+            time.sleep(0.02)
+            self._rd("NotifyPointerMotionAbsolute", GLib.Variant("(sdd)", (self.stream, x, y)))
         self.pointer = (x, y)
 
     def button(self, name, pressed):

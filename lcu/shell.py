@@ -46,6 +46,13 @@ class Shell:
         except GLib.Error:
             return False
 
+    def state(self):
+        """{'overview','locked','modal'} or None without the extension."""
+        try:
+            return json.loads(self._call("GetState")[0])
+        except GLib.Error:
+            return None
+
     def activate(self, win_id):
         try:
             return self._call("ActivateWindow", GLib.Variant("(t)", (int(win_id),)), "(b)")[0]

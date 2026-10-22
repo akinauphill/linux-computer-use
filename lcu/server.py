@@ -158,17 +158,24 @@ class Computer:
         the frontmost window without the shell extension); keyboard actions against the
         frontmost window."""
         self._require_access()
+        st = self.shell.state()
+        if st and st.get("locked"):
+            raise ToolError(f"{what} blocked: the screen is locked. Ask the user to unlock it.")
+        if st and frame_xy is None and (st.get("overview") or st.get("modal")) and not self.flags["systemKeyCombos"]:
+            raise ToolError(f"{what} blocked: GNOME Shell UI (overview, menu or dialog) has keyboard focus, "
+                            "not a granted app. Use open_application or click into the app first.")
         win = False
         if frame_xy is not None:
             win = self.shell.window_at(*self._sess().frame_to_stage(*frame_xy))
         if win is False:
             self._check_window(self.shell.focused(), need, what)
             return
-        if win is None:
+        if win is None or win.get("shell"):
             if not self.flags["systemKeyCombos"]:
-                raise ToolError(f"{what} blocked: that point is on the desktop shell (top bar, dash or "
-                                "background), not a granted app window. Request systemKeyCombos access "
-                                "to interact with the shell.")
+                raise ToolError(f"{what} blocked: that point is GNOME Shell UI (top bar, dash, overview, "
+                                "notification or desktop background), not a granted app window. Request "
+                                "systemKeyCombos access to interact with the shell."
+                                + (f" [picked: {win['actor']}]" if win and win.get("actor") else ""))
             return
         self._check_window(win.get("owner") or win, need, what)
 
@@ -326,8 +333,12 @@ class Computer:
         if text_mods or button != "left":
             need = appdb.TIER_FULL
         self._gate(need, what, fxy)
+        first = s.pointer is None
         s.move(*fxy)
-        time.sleep(0.03)
+        # let the toolkit process the enter/motion before the press (hover state, focus)
+        time.sleep(0.15 if first else 0.05)
+        # hovering can change what is under the pointer (hot corner, menus): check again
+        self._gate(need, what, fxy)
 
         def go():
             for i in range(count):
@@ -388,6 +399,7 @@ class Computer:
         self._gate(appdb.TIER_FULL, "left_click_drag", b)
         s.move(*a)
         time.sleep(0.05)
+        self._gate(appdb.TIER_FULL, "left_click_drag", a)
         s.button("left", True)
         try:
             steps = 12

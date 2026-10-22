@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 
 from PIL import Image
 
@@ -192,12 +193,30 @@ try:
     evs = wait_for(lambda e: [x for x in e if x["ev"] == "text"][-1]["value"] == "from-clipboard")
     check([x for x in evs if x["ev"] == "text"][-1]["value"] == "from-clipboard", "batch + paste from our clipboard")
 
+    has_ext = subprocess.run(["gdbus", "call", "--session", "--dest", "org.lcu.Shell", "--object-path",
+                              "/org/lcu/Shell", "--method", "org.lcu.Shell.FocusedWindow"],
+                             capture_output=True).returncode == 0
+    if has_ext:
+        # outside the target window (shell background / other app): must be refused
+        r = call("left_click", coordinate=[3, img.height - 3])
+        print("     outside click ->", r["content"][0]["text"][:300])
+        check(r.get("isError") and ("GNOME Shell UI" in r["content"][0]["text"] or
+                                    "not in the granted" in r["content"][0]["text"]),
+              "click outside granted window blocked (extension)")
+        r = ok("open_application", app="LCU Test Target")
+        check("front" in r["content"][0]["text"], "open_application focuses existing window (extension)")
+    else:
+        print("     (lcu-shell extension not running: skipping window-at-point checks)")
+
     os.makedirs(os.path.dirname(STOP_FILE), exist_ok=True)
     open(STOP_FILE, "w").close()
     r = call("screenshot")
     check(r.get("isError") and "stopped" in r["content"][0]["text"], "kill switch revokes access")
     r = call("screenshot")
     check(r.get("isError") and "request_access" in r["content"][0]["text"], "access stays revoked")
+except Exception:
+    traceback.print_exc()
+    failures.append("exception")
 finally:
     if target_pid:
         try:

@@ -1,8 +1,9 @@
+import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 const IFACE = `
 <node>
@@ -16,6 +17,7 @@ const IFACE = `
     <method name="ActivateWindow">
       <arg type="t" direction="in" name="id"/><arg type="b" direction="out" name="ok"/>
     </method>
+    <method name="GetState"><arg type="s" direction="out" name="json"/></method>
     <method name="GetPointer">
       <arg type="d" direction="out" name="x"/><arg type="d" direction="out" name="y"/>
     </method>
@@ -71,28 +73,34 @@ class Service {
     }
 
     WindowAt(x, y) {
+        // Use the real input pick so shell UI drawn over windows (overview, notifications,
+        // panel menus, dialogs) is reported as shell (null), not as the window beneath it.
         const focus = global.display.focus_window;
-        const ws = global.workspace_manager.get_active_workspace();
-        // includes popups/menus: they belong to the app that opened them
-        const actors = global.get_window_actors().slice().reverse();
-        for (const a of actors) {
-            const w = a.meta_window;
-            if (!w || w.minimized || !a.visible)
-                continue;
-            if (!w.is_on_all_workspaces() && w.get_workspace() !== ws)
-                continue;
-            const r = w.get_frame_rect();
-            if (x >= r.x && x < r.x + r.width && y >= r.y && y < r.y + r.height) {
-                let owner = w;
-                while (owner.get_transient_for?.())
-                    owner = owner.get_transient_for();
-                const d = describe(w, focus);
-                if (owner !== w)
-                    d.owner = describe(owner, focus);
-                return JSON.stringify(d);
-            }
+        const picked = global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, Math.round(x), Math.round(y));
+        const chain = [];
+        let actor = picked;
+        while (actor && !(actor instanceof Meta.WindowActor)) {
+            chain.push(`${actor.constructor.name}${actor.name ? `#${actor.name}` : ''}`);
+            actor = actor.get_parent();
         }
-        return 'null';
+        const w = actor?.meta_window ?? actor?.get_meta_window?.();
+        if (!w)
+            return JSON.stringify({shell: true, actor: chain.slice(0, 6).join(' < ')});
+        let owner = w;
+        while (owner.get_transient_for?.())
+            owner = owner.get_transient_for();
+        const d = describe(w, focus);
+        if (owner !== w)
+            d.owner = describe(owner, focus);
+        return JSON.stringify(d);
+    }
+
+    GetState() {
+        return JSON.stringify({
+            overview: Main.overview.visible,
+            locked: Main.sessionMode.isLocked,
+            modal: Main.modalCount > 0,
+        });
     }
 
     ActivateWindow(id) {
